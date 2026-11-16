@@ -466,9 +466,10 @@
   try{ localStorage.setItem(KEY, String(now)); }catch(e){}
   if(now-last > 30*60*1000){
     var d=new Date();
+    var ymd=""+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate());
     hit("total");
-    hit("dia."+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate()));
-    hit("hora."+p2(d.getHours()));
+    hit("dia."+ymd);
+    hit("hora."+ymd+"."+p2(d.getHours()));
     hit(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "dev.mobile" : "dev.desktop");
     var ref=document.referrer||"";
     if(/instagram|l\.instagram/i.test(ref)) hit("origem.instagram");
@@ -476,9 +477,17 @@
     else hit("origem.direto");
   }
 
+  function hoje(){
+    var t=new Date();
+    return ""+t.getFullYear()+p2(t.getMonth()+1)+p2(t.getDate());
+  }
   var w=document.querySelector("a.btn-whats"), i=document.querySelector("a.btn-ifood");
-  if(w) w.addEventListener("click", function(){ hit("clique.whatsapp"); });
-  if(i) i.addEventListener("click", function(){ hit("clique.ifood"); });
+  if(w) w.addEventListener("click", function(){
+    hit("clique.whatsapp"); hit("clique.whatsapp."+hoje());
+  });
+  if(i) i.addEventListener("click", function(){
+    hit("clique.ifood"); hit("clique.ifood."+hoje());
+  });
 
   var SKEY="dgt_sexo_v1", card=document.getElementById("cardSexo"), salvo=null;
   try{ salvo=localStorage.getItem(SKEY); }catch(e){}
