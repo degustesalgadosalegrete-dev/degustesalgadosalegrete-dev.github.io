@@ -185,6 +185,32 @@
     margin-top:26px;line-height:1.7;
   }
   footer .tel{font-size:13px;color:var(--terra-escuro);font-weight:600}
+
+  .sexo{
+    margin-top:22px;background:#fff;border:1.5px solid var(--creme-2);
+    border-radius:15px;padding:17px 18px;text-align:center;
+  }
+  .sexo h4{
+    font-family:Georgia,serif;font-size:15px;color:var(--marrom);margin-bottom:6px;
+  }
+  .sexo p{font-size:12px;color:#8A7768;line-height:1.55;margin-bottom:13px}
+  .sexo .ops{display:flex;gap:9px}
+  .sexo .ops button{
+    flex:1;font-family:inherit;font-size:13.5px;font-weight:600;
+    color:var(--terra-escuro);background:var(--creme);
+    border:1.5px solid var(--creme-2);border-radius:11px;
+    padding:11px 6px;cursor:pointer;transition:background .12s ease,transform .12s ease;
+  }
+  .sexo .ops button:active{transform:scale(.97)}
+  .sexo .ops button:hover{background:var(--creme-2)}
+  .sexo .pular{
+    display:inline-block;margin-top:11px;font-size:11.5px;color:#A8968A;
+    background:none;border:none;font-family:inherit;cursor:pointer;
+    text-decoration:underline;padding:2px;
+  }
+  .sexo .ok{
+    font-size:13px;color:var(--terra-escuro);font-weight:600;padding:6px 0 2px;
+  }
 </style>
 </head>
 <body>
@@ -406,6 +432,16 @@
     Valores e disponibilidade podem sofrer alteração.
   </p>
 
+  <div class="sexo" id="cardSexo">
+    <h4>Ajude a Deguste a te conhecer</h4>
+    <p>Uma pergunta rapidinha, leva 1 segundo.</p>
+    <div class="ops">
+      <button type="button" data-sexo="f">Feminino</button>
+      <button type="button" data-sexo="m">Masculino</button>
+    </div>
+    <button type="button" class="pular" id="pularSexo">Prefiro não responder</button>
+  </div>
+
   <footer>
     Deguste · Confeitaria Artesanal<br>
     <span class="tel">(55) 99990-7539</span><br>
@@ -413,5 +449,62 @@
   </footer>
 
 </div>
+<script>
+(function(){
+  var API = "https://countapi.mileshilliard.com/api/v1/hit/";
+  var NS  = "dgt.bio2.";
+  function hit(k){
+    try{
+      fetch(API + NS + k, {mode:"cors", cache:"no-store", keepalive:true})
+        .catch(function(){});
+    }catch(e){}
+  }
+  function p2(n){ return (n<10?"0":"")+n; }
+
+  var KEY="dgt_v1", now=Date.now(), last=0;
+  try{ last = parseInt(localStorage.getItem(KEY)||"0",10)||0; }catch(e){}
+  try{ localStorage.setItem(KEY, String(now)); }catch(e){}
+  if(now-last > 30*60*1000){
+    var d=new Date();
+    hit("total");
+    hit("dia."+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate()));
+    hit("hora."+p2(d.getHours()));
+    hit(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "dev.mobile" : "dev.desktop");
+    var ref=document.referrer||"";
+    if(/instagram|l\.instagram/i.test(ref)) hit("origem.instagram");
+    else if(ref) hit("origem.outros");
+    else hit("origem.direto");
+  }
+
+  var w=document.querySelector("a.btn-whats"), i=document.querySelector("a.btn-ifood");
+  if(w) w.addEventListener("click", function(){ hit("clique.whatsapp"); });
+  if(i) i.addEventListener("click", function(){ hit("clique.ifood"); });
+
+  var SKEY="dgt_sexo_v1", card=document.getElementById("cardSexo"), salvo=null;
+  try{ salvo=localStorage.getItem(SKEY); }catch(e){}
+  function agradecer(){
+    if(!card) return;
+    card.innerHTML = '<div class="ok">Obrigado! 💛</div>';
+  }
+  if(salvo){ agradecer(); }
+  else if(card){
+    var bts=card.querySelectorAll("[data-sexo]");
+    for(var k=0;k<bts.length;k++){
+      bts[k].addEventListener("click", function(){
+        var s=this.getAttribute("data-sexo");
+        hit("sexo."+s);
+        try{ localStorage.setItem(SKEY, s); }catch(e){}
+        agradecer();
+      });
+    }
+    var pular=document.getElementById("pularSexo");
+    if(pular) pular.addEventListener("click", function(){
+      hit("sexo.ni");
+      try{ localStorage.setItem(SKEY,"ni"); }catch(e){}
+      agradecer();
+    });
+  }
+})();
+</script>
 </body>
 </html>
